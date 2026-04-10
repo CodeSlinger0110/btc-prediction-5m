@@ -1,0 +1,19 @@
+[
+  "time_left",
+  "t_index",
+  "pct_change_so_far",
+  "cum_log_ret_window",
+  "roc_5s",
+  "roc_15s",
+  "roc_30s",
+  "roc_60s",
+  "zscore_60",
+  "zscore_300",
+  "bb_pct_b",
+  "rsi_14",
+  "dist_ema_60",
+  "ctx_roc_300",
+  "ctx_roc_600",
+  "pre_window_ret",
+  "pre_window_realized_vol"
+]
