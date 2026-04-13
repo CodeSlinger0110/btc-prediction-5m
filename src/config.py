@@ -31,6 +31,16 @@ class DataConfig:
 
     # Glob under data_dir for Binance 1s klines (no header).
     csv_glob: str = "BTCUSDT-1s-*.csv"
+    # Merge this many CSV DataFrames into one block before writing a shard / in-memory block (1 = never concat CSVs in RAM).
+    csv_read_wave_size: int = 1
+    # Fan-in per level when tree-merging shards/blocks (2 = pairwise merge; lower peak RAM than 4+).
+    # Used only when csv_parquet_merge_strategy is "tree" (disk spill).
+    csv_merge_batch_size: int = 2
+    # Disk spill: "sequential" = append one parquet shard at a time (lowest peak RAM).
+    # "tree" = pairwise PyArrow concat (faster on fast disks, higher peak RAM).
+    csv_parquet_merge_strategy: str = "sequential"
+    # When pyarrow is installed, write wave-blocks to temp parquet and merge on disk (avoids OOM on many large files).
+    csv_disk_spill_merge: bool = True
     # Seconds per prediction window (5-minute Polymarket candle).
     window_size: int = 300
     # Seconds of 1s history required *before* window open (for pre-window stats + warm rolls).
@@ -39,6 +49,9 @@ class DataConfig:
     align_windows_to_utc_5m: bool = True
     # Require 300 consecutive 1-second timestamps inside each window.
     require_contiguous_seconds: bool = True
+    # Precompute rolling indicators in contiguous slices of this many rows (plus a warmup tail).
+    # 0 = one pass (highest peak RAM). ~2e6 keeps peak indicator memory low on 50M+ row series.
+    indicator_chunk_rows: int = 2_000_000
 
 
 @dataclass
@@ -87,6 +100,9 @@ class TrainConfig:
     backtest_decision_t: int = 300
     # Annualization for Sharpe on 5m windows (24/7): 12 * 24 * 365.
     periods_per_year: float = 12.0 * 24.0 * 365.0
+    # LightGBM: max training windows per RAM batch (0 = build one giant X/y — needs huge RAM).
+    # Use 500–2000 on long histories so train.py materializes/scales/boosts in chunks.
+    train_chunk_windows: int = 0
 
 
 @dataclass
